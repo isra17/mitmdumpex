@@ -15,8 +15,6 @@ class RotatedFlowWriter:
         if fsize == 0:
             os.remove(fo.name)
 
-        signal.signal(signal.SIGUSR1, self.flush)
-
 
     def add(self, f):
         self._check_rotation()

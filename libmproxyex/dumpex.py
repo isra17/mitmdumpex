@@ -1,4 +1,4 @@
-import libmproxy
+import libmproxy, signal
 from libmproxy import flow
 from libmproxy.dump import *
 from .splitflowwriter import SplitFlowWriter
@@ -36,6 +36,9 @@ class DumpExMaster(DumpMaster):
             except flow.FlowReadError as v:
                 self.add_event("Flow file corrupted.", "error")
                 raise DumpError(v)
+
+        if self.rotate_logs:
+            signal.signal(signal.SIGUSR1, lambda n,s: self.stream.flush())
 
 
     def start_split_stream(self, split_dir, filt):

@@ -12,6 +12,13 @@ class SplitFlowWriter():
         writer = self._client_writer(f.client_conn)
         writer.add(f)
 
+    def flush(self):
+        for k,w in self._writers.iteritems():
+            if hasattr(w, 'close'):
+                w.flush()
+            else:
+                w.fo.flush()
+
     def close(self):
         for k,w in self._writers.iteritems():
             if hasattr(w, 'close'):
