@@ -1,0 +1,4 @@
+#!/usr/bin/env python2
+from libmproxyex.main import mitmdumpex
+mitmdumpex()
+
