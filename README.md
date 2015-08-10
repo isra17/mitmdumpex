@@ -16,11 +16,10 @@ Mitmdump parameters are all supported as well.
 
 `mitmdumpex --split-flows dumps/ --rotate-logs` would output something like:
 ```
-dumps/150730-192.168.0.1
-dumps/150802-192.168.0.1
-dumps/150802-192.168.0.2
-dumps/150803-192.168.0.1
-dumps/150804-192.168.0.4
+dumps/192.168.0.1/15-08-01
+dumps/192.168.0.1/15-08-02
+dumps/192.168.0.2/15-08-01
+dumps/192.168.0.4/15-08-02
 ```
 
 `--rotate-logs` can also be used with regular flow writer:

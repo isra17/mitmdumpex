@@ -1,36 +1,36 @@
 import libmproxy, signal
 from libmproxy import flow
 from libmproxy.dump import *
-from .splitflowwriter import SplitFlowWriter
-from .rotatedflowwriter import RotatedFlowWriter
+from .flowwriter import *
+
 
 class Options(libmproxy.dump.Options):
     rotate_logs = False
+    outfileex = None
+    rfileex = None
 
 
 class DumpExMaster(DumpMaster):
     def __init__(self, server, options, outfile=sys.stdout):
         # Delay the stream setup, otherwise it gets overwriten by FlowMaster.__init__
-        split_dir = None
-        if options.outfile and options.outfile[1] == 'split-flows':
-            split_dir = options.outfile[0]
-            options.outfile = None
-
-        # Delay the flows loading, otherwise we can't use our custom FlowWriter
-        rfile = None
-        if options.rfile:
-            rfile = options.rfile
-            options.rfile = None
+        options.outfileex = options.outfile
+        options.rfileex = options.rfile
+        options.outfile = None
+        options.rfile = None
 
         self.rotate_logs = options.rotate_logs
 
         super(DumpExMaster, self).__init__(server, options, outfile)
 
-        if split_dir:
-            self.start_split_stream(split_dir, self.filt)
+        if options.outfileex:
+            if options.outfileex[1] == 'split-flows':
+                self.start_split_stream(options.outfileex[0], self.filt)
+            else:
+                options.outfile = options.outfileex
+                self.start_stream(options.outfile[0], options.outfile[1], self.filt)
 
-        if rfile:
-            options.rfile = rfile
+        if options.rfileex:
+            options.rfile = options.rfileex
             try:
                 self.load_flows_file(options.rfile)
             except flow.FlowReadError as v:
@@ -45,19 +45,16 @@ class DumpExMaster(DumpMaster):
         if self.rotate_logs:
             writer = RotatedFlowWriter
         else:
-            writer = flow.FilteredFlowWriter
+            writer = FilteredFlowWriter
 
         self.stream = SplitFlowWriter(split_dir, writer, [filt])
 
-    def start_stream(self, fp, filt):
+    def start_stream(self, fp, mode, filt):
         if self.rotate_logs:
             self.stream = RotatedFlowWriter(fp, filt)
         else:
-            self.stream = FilteredFlowWriter(fp, filt)
+            self.stream = FilteredFlowWriter(fp, filt, mode=mode)
 
     def stop_stream(self):
-        if hasattr(self.stream, 'close'):
-            self.stream.close()
-        else:
-            super(DumpExMaster, self).stop_stream(self)
+        self.stream.close()
 
